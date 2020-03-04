@@ -1,17 +1,17 @@
-foobar:~/ seyedhosein77$ cat <br>
+foobar:/ seyedhosein77$ cat <br>
 ```start_here.txt    journal.txt```
-<br>foobar:~/ seyedhosein77$ cat start_here.txt <br>
+<br>foobar:/ seyedhosein77$ cat start_here.txt <br>
 ```Type request to request a challenge. Type help for a list of commands.```
-<br>foobar:~/ seyedhosein77$ cat journal.txt <br>
+<br>foobar:/ seyedhosein77$ cat journal.txt <br>
 ```Success! You've managed to infiltrate Commander Lambda's evil organization, and finally earned yourself an entry-level position as a Minion on her space station. From here, you just might be able to subvert her plans to use the LAMBCHOP doomsday device to destroy Bunny Planet. Problem is, Minions are the lowest of the low in the Lambda hierarchy. Better buck up and get working, or you'll never make it to the top...```
 <br>foobar:~/ seyedhosein77$ 
 
 
 --------------------------------------------------------------------
 
-<br>foobar:~/ seyedhosein77$ status<br>
+<br>foobar:/ seyedhosein77$ status<br>
 ```You've not yet solved a challenge.```
-<br>foobar:~/ seyedhosein77$ request<br>
+<br>foobar:/ seyedhosein77$ request<br>
 ```
  You are about to begin a time-limited challenge which you will have 48 hours to complete.
 Do you wish to proceed and start your first challenge?
