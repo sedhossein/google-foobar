@@ -31,10 +31,3 @@ def solution(xs):
         res *= i
 
     return str(res)
-
-
-print(solution([0, 0]))
-print(solution([-2, -2, 0, 0, 2, 3]))
-print(solution([2, 3, 0, 0, 2, 2]))
-print(solution([2, 3, 2, 2]))
-print(solution([-2, -2, -3]))
