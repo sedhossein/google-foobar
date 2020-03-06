@@ -10,6 +10,3 @@ def solution(x, y):
     yPrim = collectionSum(y) - (y - 1)
 
     return str(xPrim + yPrim + (x - 1)*(y - 1) - 1)
-
-
-print(solution(5, 2))
