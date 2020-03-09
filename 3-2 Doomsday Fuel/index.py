@@ -23,37 +23,38 @@ def getNonTerminalStates(states):
 
 
 def getMarkovChainsMatrix(states):
-    chainStates = []
-
-    for stateNumber, state in enumerate(states):
-        for to, probability in enumerate(state):
-
-            if probability == 0:
-                continue
-
-            # states[stateNumber][to] is equal to probability
-            if states[stateNumber][to] != 0 and states[to][stateNumber] != 0:
-                if to == stateNumber:
-                    raise RuntimeWarning("invalid data received")
-
-                chainStates.append(stateNumber)
-                continue
-
-    chainStates = list(set(chainStates))
-
+    chainStates = getNonTerminalStates(states)
     chainStatesLen = len(chainStates)
     markovProbabilitiesMatrix = makeAxBMatrix(chainStatesLen, chainStatesLen)
+
     for stateNumber, state in enumerate(states):
         if stateNumber not in chainStates:
             continue
 
         for destination, probability in enumerate(state):
-            if not (destination in chainStates):
+            if destination not in chainStates:
                 continue
 
-            markovProbabilitiesMatrix[stateNumber][destination] = Fraction(probability, sum(state))
+            x, y = pathForQMatrix(stateNumber, destination, states)
+            markovProbabilitiesMatrix[x][y] = Fraction(probability, sum(state))
+            # markovProbabilitiesMatrix[stateNumber][destination] = Fraction(probability, sum(state))
 
     return markovProbabilitiesMatrix
+
+
+def pathForQMatrix(row, column, states):
+    nonTerminalStates = getNonTerminalStates(states)
+    if row not in nonTerminalStates or column not in nonTerminalStates:
+        raise RuntimeWarning("pathFor: invalid request received")
+
+    x, y = 0, 0
+    for index, value in enumerate(nonTerminalStates):
+        if value == row:
+            x = index
+        if value == column:
+            y = index
+
+    return x, y
 
 
 def makeIMatrix(count):
@@ -101,7 +102,6 @@ def multiMatrix(a, b):
 
 
 def getNoChainStatesMatrix(states, terminalStates):
-    nonTerminalStates = getNonTerminalStates(states)
     noChainStatesLen = len(states) - len(terminalStates)
     matrix = makeAxBMatrix(noChainStatesLen, len(terminalStates))
     copyStates = states[:]
@@ -114,19 +114,16 @@ def getNoChainStatesMatrix(states, terminalStates):
     for stateNumber, state in enumerate(copyStates):
         denominator = sum(state)
         for to, probability in enumerate(state):
-            if to not in nonTerminalStates:
-                x, y = pathFor(stateNumber, to, states)
+            if to in terminalStates:
+                x, y = pathForRMatrix(stateNumber, to, states)
                 matrix[x][y] = Fraction(probability / denominator)
 
     return matrix
 
 
-def pathFor(row, column, states):
+def pathForRMatrix(row, column, states):
     terminalStates = getTerminalStates(states)
     nonTerminalStates = getNonTerminalStates(states)
-
-    if not (row in nonTerminalStates) or not (column in terminalStates):
-        raise RuntimeWarning("pathFor: invalid request received")
 
     x, y = 0, 0
     for index, value in enumerate(nonTerminalStates):
@@ -194,6 +191,9 @@ def solution(m):
     # validate inputs (is 2D array, has valid states, len of states, len of arrays)
     states = m
 
+    if len(states) == 1:
+        return [1, 1]
+
     # finding terminal states
     terminalStates = getTerminalStates(states)
 
@@ -226,28 +226,146 @@ def solution(m):
     FR = multiMatrix(F, R)
 
     print("FR", FR)
-    print("FR[0][0]", Fraction(FR[0][0]).limit_denominator())
-    print("FR[0][1]", Fraction(FR[0][1]).limit_denominator())
-    print("FR[0][2]", Fraction(FR[0][2]).limit_denominator())
-    print("FR[0][3]", Fraction(FR[0][3]).limit_denominator())
-
-    print("FR[1][0]", Fraction(FR[1][0]).limit_denominator())
-    print("FR[1][1]", Fraction(FR[1][1]).limit_denominator())
-    print("FR[1][2]", Fraction(FR[1][2]).limit_denominator())
-    print("FR[1][3]", Fraction(FR[1][3]).limit_denominator())
+    # print("FR[0][0]", Fraction(FR[0][0]).limit_denominator())
+    # print("FR[0][1]", Fraction(FR[0][1]).limit_denominator())
+    # print("FR[0][2]", Fraction(FR[0][2]).limit_denominator())
+    # print("FR[0][3]", Fraction(FR[0][3]).limit_denominator())
+    #
+    # print("FR[1][0]", Fraction(FR[1][0]).limit_denominator())
+    # print("FR[1][1]", Fraction(FR[1][1]).limit_denominator())
+    # print("FR[1][2]", Fraction(FR[1][2]).limit_denominator())
+    # print("FR[1][3]", Fraction(FR[1][3]).limit_denominator())
 
     print("final res:", solutionAdapter(FR))
+
     # adapt result to wanted structure
     return solutionAdapter(FR)
 
 
-print(solution(
-    [
-        [0, 1, 0, 0, 0, 1],  # s0, the initial state, goes to s1 and s5 with equal probability
-        [4, 0, 0, 3, 2, 0],  # s1 can become s0, s3, or s4, but with different probabilities
-        [0, 0, 0, 0, 0, 0],  # s2 is terminal, and unreachable (never observed in practice)
-        [0, 0, 0, 0, 0, 0],  # s3 is terminal
-        [0, 0, 0, 0, 0, 0],  # s4 is terminal
-        [0, 0, 0, 0, 0, 0],  # s5 is terminal
-    ]
-))
+# print(solution([
+#     [0, 2, 1, 0, 0],
+#     [0, 0, 0, 3, 4],
+#     [0, 0, 0, 0, 0],
+#     [0, 0, 0, 0, 0],
+#     [0, 0, 0, 0, 0]
+# ]) == [7, 6, 8, 21]
+#       )
+
+# print(solution(
+#     [
+#         [0, 1, 0, 0, 0, 1],  # s0, the initial state, goes to s1 and s5 with equal probability
+#         [4, 0, 0, 3, 2, 0],  # s1 can become s0, s3, or s4, but with different probabilities
+#         [0, 0, 0, 0, 0, 0],  # s2 is terminal, and unreachable (never observed in practice)
+#         [0, 0, 0, 0, 0, 0],  # s3 is terminal
+#         [0, 0, 0, 0, 0, 0],  # s4 is terminal
+#         [0, 0, 0, 0, 0, 0],  # s5 is terminal
+#     ]) == [0, 3, 2, 9, 14]
+#       )
+#
+# print(solution([
+#                    [0, 0, 0, 0, 3, 5, 0, 0, 0, 2],
+#                    [0, 0, 4, 0, 0, 0, 1, 0, 0, 0],
+#                    [0, 0, 0, 4, 4, 0, 0, 0, 1, 1],
+#                    [13, 0, 0, 0, 0, 0, 2, 0, 0, 0],
+#                    [0, 1, 8, 7, 0, 0, 0, 1, 3, 0],
+#                    [1, 7, 0, 0, 0, 0, 0, 2, 0, 0],
+#                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+#                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+#                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+#                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+#                ]) == [1, 1, 1, 2, 5]
+#       )
+#
+# print(solution([
+#     [0, 86, 61, 189, 0, 18, 12, 33, 66, 39],
+#     [0, 0, 2, 0, 0, 1, 0, 0, 0, 0],
+#     [15, 187, 0, 0, 18, 23, 0, 0, 0, 0],
+#     [1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+#     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+#     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+#     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+#     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+#     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+#     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+# ]) == [6, 44, 4, 11, 22, 13, 100]
+#       )
+#
+
+# print(solution(([
+#     [0, 7, 0, 17, 0, 1, 0, 5, 0, 2],
+#     [0, 0, 29, 0, 28, 0, 3, 0, 16, 0],
+#     [0, 3, 0, 0, 0, 1, 0, 0, 0, 0],
+#     [48, 0, 3, 0, 0, 0, 17, 0, 0, 0],
+#     [0, 6, 0, 0, 0, 1, 0, 0, 0, 0],
+#     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+#     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+#     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+#     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+#     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+# ])
+#                ) == [4, 5, 5, 4, 2, 20]
+#       )
+#
+# print(solution([
+#     [0, 0, 12, 0, 15, 0, 0, 0, 1, 8],
+#     [0, 0, 60, 0, 0, 7, 13, 0, 0, 0],
+#     [0, 15, 0, 8, 7, 0, 0, 1, 9, 0],
+#     [23, 0, 0, 0, 0, 1, 0, 0, 0, 0],
+#     [37, 35, 0, 0, 0, 0, 3, 21, 0, 0],
+#     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+#     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+#     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+#     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+#     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+# ]) == [1, 2, 3, 4, 5, 15]
+#       )
+
+# print(solution(([
+#     [0]
+# ])) == [1, 1]
+#       )
+
+
+# print(solution(([
+#     [1, 2, 3, 0, 0, 0],
+#     [4, 5, 6, 0, 0, 0],
+#     [7, 8, 9, 1, 0, 0],
+#     [0, 0, 0, 0, 1, 2],
+#     [0, 0, 0, 0, 0, 0],
+#     [0, 0, 0, 0, 0, 0]
+# ]) )== [1, 2, 3])
+#
+
+###!!!!!!!!!!!!!
+# print(solution(([
+#     [1, 1, 1, 0, 1, 0, 1, 0, 1, 0],
+#     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+#     [1, 0, 1, 1, 1, 0, 1, 0, 1, 0],
+#     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+#     [1, 0, 1, 0, 1, 1, 1, 0, 1, 0],
+#     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+#     [1, 0, 1, 0, 1, 0, 1, 1, 1, 0],
+#     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+#     [1, 0, 1, 0, 1, 0, 1, 0, 1, 1],
+#     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+# ])
+# ) == [2, 1, 1, 1, 1, 6]
+#       )
+
+print(solution(([
+    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+])
+               )== [1, 1, 1, 1, 1, 5]
+      )
+
+
+#
