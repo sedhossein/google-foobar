@@ -1,6 +1,6 @@
 from __future__ import division
-from fractions import Fraction as frac
-from fractions import gcd
+from fractions import Fraction
+from fractions import gcd  # or can import gcd from `math` in Python 3
 import numpy
 
 
@@ -44,14 +44,14 @@ def getMarkovChainsMatrix(states):
     chainStatesLen = len(chainStates)
     markovProbabilitiesMatrix = makeAxBMatrix(chainStatesLen, chainStatesLen)
     for stateNumber, state in enumerate(states):
-        if not (stateNumber in chainStates):
+        if stateNumber not in chainStates:
             continue
 
         for destination, probability in enumerate(state):
             if not (destination in chainStates):
                 continue
 
-            markovProbabilitiesMatrix[stateNumber][destination] = frac(probability, sum(state))
+            markovProbabilitiesMatrix[stateNumber][destination] = Fraction(probability, sum(state))
 
     return markovProbabilitiesMatrix
 
@@ -101,10 +101,12 @@ def multiMatrix(a, b):
 
 
 def getNoChainStatesMatrix(states, terminalStates):
+    nonTerminalStates = getNonTerminalStates(states)
     noChainStatesLen = len(states) - len(terminalStates)
     matrix = makeAxBMatrix(noChainStatesLen, len(terminalStates))
     copyStates = states[:]
 
+    # removing terminal states
     terminalStates.sort(reverse=True)
     for index in terminalStates:
         del copyStates[index]
@@ -112,9 +114,9 @@ def getNoChainStatesMatrix(states, terminalStates):
     for stateNumber, state in enumerate(copyStates):
         denominator = sum(state)
         for to, probability in enumerate(state):
-            if to in terminalStates:  # fixme!!!
+            if to not in nonTerminalStates:
                 x, y = pathFor(stateNumber, to, states)
-                matrix[x][y] = frac(probability / denominator)
+                matrix[x][y] = Fraction(probability / denominator)
 
     return matrix
 
@@ -132,7 +134,7 @@ def pathFor(row, column, states):
             x = index
 
     for index, value in enumerate(terminalStates):
-        if value == row:
+        if value == column:
             y = index
 
     return x, y
@@ -153,30 +155,39 @@ def makeAxBMatrix(height, length):
     return res
 
 
+def lcm(x, y):
+    return x * y // gcd(x, y)
+
+
 def solutionAdapter(FR):
-    midNormaliseRes = []
-    normaliseRes = []
+    normalise = []
+    res = []
     commonDenominator = 1
 
-    for i, resultArray in enumerate(FR):
-        for ii, v in enumerate(resultArray):
-            midNormaliseRes.append(str(frac(v).limit_denominator()))
-        break
+    for i, v in enumerate(FR[0]):
+        normalise.append(str(Fraction(v).limit_denominator()))
 
-    for index, value in enumerate(midNormaliseRes):
+    # calculate common denominator
+    for value in normalise:
+        if str(value) == "0":
+            _, denominator = [0, commonDenominator]
+        else:
+            _, denominator = str(value).split('/')
+
+        commonDenominator = lcm(commonDenominator, int(denominator))
+
+    for index, value in enumerate(normalise):
         if str(value) == "0":
             numerator, denominator = [0, commonDenominator]
         else:
             numerator, denominator = str(value).split('/')
             denominator = int(denominator)
-            normaliseRes.append(int(numerator))
 
-        if commonDenominator != denominator:
-            commonDenominator = gcd(commonDenominator, denominator)
+        res.append(int(commonDenominator / denominator) * int(numerator))
 
-    normaliseRes.append(commonDenominator)
+    res.append(commonDenominator)
 
-    return normaliseRes
+    return res
 
 
 def solution(m):
@@ -197,14 +208,14 @@ def solution(m):
     Z = minusMatrix(makeIMatrix(len(Q)), Q)
 
     print("Z", Z)
-    print("Z[1][0]", frac(Z[1][0]).limit_denominator())
+    print("Z[1][0]", Fraction(Z[1][0]).limit_denominator())
 
     # calculate (I-Q)^(-1) => F
     F = inverseMatrix(Z)
 
     print("F", F)
-    print("F[1][0]", frac(F[1][0]).limit_denominator())
-    print("F[1][1]", frac(F[1][1]).limit_denominator())
+    print("F[1][0]", Fraction(F[1][0]).limit_denominator())
+    print("F[1][1]", Fraction(F[1][1]).limit_denominator())
 
     # calculate the probability of non markov chains => (R)
     R = getNoChainStatesMatrix(states, terminalStates)
@@ -214,6 +225,18 @@ def solution(m):
     # calculate FR
     FR = multiMatrix(F, R)
 
+    print("FR", FR)
+    print("FR[0][0]", Fraction(FR[0][0]).limit_denominator())
+    print("FR[0][1]", Fraction(FR[0][1]).limit_denominator())
+    print("FR[0][2]", Fraction(FR[0][2]).limit_denominator())
+    print("FR[0][3]", Fraction(FR[0][3]).limit_denominator())
+
+    print("FR[1][0]", Fraction(FR[1][0]).limit_denominator())
+    print("FR[1][1]", Fraction(FR[1][1]).limit_denominator())
+    print("FR[1][2]", Fraction(FR[1][2]).limit_denominator())
+    print("FR[1][3]", Fraction(FR[1][3]).limit_denominator())
+
+    print("final res:", solutionAdapter(FR))
     # adapt result to wanted structure
     return solutionAdapter(FR)
 
