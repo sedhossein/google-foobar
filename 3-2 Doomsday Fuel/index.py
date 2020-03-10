@@ -37,7 +37,6 @@ def getMarkovChainsMatrix(states):
 
             x, y = pathForQMatrix(stateNumber, destination, states)
             markovProbabilitiesMatrix[x][y] = Fraction(probability, sum(state))
-            # markovProbabilitiesMatrix[stateNumber][destination] = Fraction(probability, sum(state))
 
     return markovProbabilitiesMatrix
 
@@ -102,21 +101,18 @@ def multiMatrix(a, b):
 
 
 def getNoChainStatesMatrix(states, terminalStates):
+    nonTerminalStates = getNonTerminalStates(states)
     noChainStatesLen = len(states) - len(terminalStates)
     matrix = makeAxBMatrix(noChainStatesLen, len(terminalStates))
     copyStates = states[:]
-
-    # removing terminal states
-    terminalStates.sort(reverse=True)
-    for index in terminalStates:
-        del copyStates[index]
 
     for stateNumber, state in enumerate(copyStates):
         denominator = sum(state)
         for to, probability in enumerate(state):
             if to in terminalStates:
-                x, y = pathForRMatrix(stateNumber, to, states)
-                matrix[x][y] = Fraction(probability / denominator)
+                if (stateNumber in nonTerminalStates) and to in terminalStates:
+                    x, y = pathForRMatrix(stateNumber, to, states)
+                    matrix[x][y] = Fraction(probability / denominator)
 
     return matrix
 
@@ -197,175 +193,21 @@ def solution(m):
     # finding terminal states
     terminalStates = getTerminalStates(states)
 
-    print("terminalStates", terminalStates)
-
     # make Loop states probability(markov chains) => (Q)
     Q = getMarkovChainsMatrix(states)
-
-    print("Q", Q)
 
     # calculate I-Q => Z
     Z = minusMatrix(makeIMatrix(len(Q)), Q)
 
-    print("Z", Z)
-    print("Z[1][0]", Fraction(Z[1][0]).limit_denominator())
-
     # calculate (I-Q)^(-1) => F
     F = inverseMatrix(Z)
-
-    print("F", F)
-    print("F[1][0]", Fraction(F[1][0]).limit_denominator())
-    print("F[1][1]", Fraction(F[1][1]).limit_denominator())
 
     # calculate the probability of non markov chains => (R)
     R = getNoChainStatesMatrix(states, terminalStates)
 
-    print("R", R)
-
     # calculate FR
     FR = multiMatrix(F, R)
-
-    print("FR", FR)
-    # print("FR[0][0]", Fraction(FR[0][0]).limit_denominator())
-    # print("FR[0][1]", Fraction(FR[0][1]).limit_denominator())
-    # print("FR[0][2]", Fraction(FR[0][2]).limit_denominator())
-    # print("FR[0][3]", Fraction(FR[0][3]).limit_denominator())
-    #
-    # print("FR[1][0]", Fraction(FR[1][0]).limit_denominator())
-    # print("FR[1][1]", Fraction(FR[1][1]).limit_denominator())
-    # print("FR[1][2]", Fraction(FR[1][2]).limit_denominator())
-    # print("FR[1][3]", Fraction(FR[1][3]).limit_denominator())
-
-    print("final res:", solutionAdapter(FR))
 
     # adapt result to wanted structure
     return solutionAdapter(FR)
 
-
-# print(solution([
-#     [0, 2, 1, 0, 0],
-#     [0, 0, 0, 3, 4],
-#     [0, 0, 0, 0, 0],
-#     [0, 0, 0, 0, 0],
-#     [0, 0, 0, 0, 0]
-# ]) == [7, 6, 8, 21]
-#       )
-
-# print(solution(
-#     [
-#         [0, 1, 0, 0, 0, 1],  # s0, the initial state, goes to s1 and s5 with equal probability
-#         [4, 0, 0, 3, 2, 0],  # s1 can become s0, s3, or s4, but with different probabilities
-#         [0, 0, 0, 0, 0, 0],  # s2 is terminal, and unreachable (never observed in practice)
-#         [0, 0, 0, 0, 0, 0],  # s3 is terminal
-#         [0, 0, 0, 0, 0, 0],  # s4 is terminal
-#         [0, 0, 0, 0, 0, 0],  # s5 is terminal
-#     ]) == [0, 3, 2, 9, 14]
-#       )
-#
-# print(solution([
-#                    [0, 0, 0, 0, 3, 5, 0, 0, 0, 2],
-#                    [0, 0, 4, 0, 0, 0, 1, 0, 0, 0],
-#                    [0, 0, 0, 4, 4, 0, 0, 0, 1, 1],
-#                    [13, 0, 0, 0, 0, 0, 2, 0, 0, 0],
-#                    [0, 1, 8, 7, 0, 0, 0, 1, 3, 0],
-#                    [1, 7, 0, 0, 0, 0, 0, 2, 0, 0],
-#                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-#                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-#                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-#                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-#                ]) == [1, 1, 1, 2, 5]
-#       )
-#
-# print(solution([
-#     [0, 86, 61, 189, 0, 18, 12, 33, 66, 39],
-#     [0, 0, 2, 0, 0, 1, 0, 0, 0, 0],
-#     [15, 187, 0, 0, 18, 23, 0, 0, 0, 0],
-#     [1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-#     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-#     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-#     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-#     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-#     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-#     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-# ]) == [6, 44, 4, 11, 22, 13, 100]
-#       )
-#
-
-# print(solution(([
-#     [0, 7, 0, 17, 0, 1, 0, 5, 0, 2],
-#     [0, 0, 29, 0, 28, 0, 3, 0, 16, 0],
-#     [0, 3, 0, 0, 0, 1, 0, 0, 0, 0],
-#     [48, 0, 3, 0, 0, 0, 17, 0, 0, 0],
-#     [0, 6, 0, 0, 0, 1, 0, 0, 0, 0],
-#     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-#     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-#     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-#     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-#     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-# ])
-#                ) == [4, 5, 5, 4, 2, 20]
-#       )
-#
-# print(solution([
-#     [0, 0, 12, 0, 15, 0, 0, 0, 1, 8],
-#     [0, 0, 60, 0, 0, 7, 13, 0, 0, 0],
-#     [0, 15, 0, 8, 7, 0, 0, 1, 9, 0],
-#     [23, 0, 0, 0, 0, 1, 0, 0, 0, 0],
-#     [37, 35, 0, 0, 0, 0, 3, 21, 0, 0],
-#     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-#     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-#     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-#     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-#     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-# ]) == [1, 2, 3, 4, 5, 15]
-#       )
-
-# print(solution(([
-#     [0]
-# ])) == [1, 1]
-#       )
-
-
-# print(solution(([
-#     [1, 2, 3, 0, 0, 0],
-#     [4, 5, 6, 0, 0, 0],
-#     [7, 8, 9, 1, 0, 0],
-#     [0, 0, 0, 0, 1, 2],
-#     [0, 0, 0, 0, 0, 0],
-#     [0, 0, 0, 0, 0, 0]
-# ]) )== [1, 2, 3])
-#
-
-###!!!!!!!!!!!!!
-# print(solution(([
-#     [1, 1, 1, 0, 1, 0, 1, 0, 1, 0],
-#     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-#     [1, 0, 1, 1, 1, 0, 1, 0, 1, 0],
-#     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-#     [1, 0, 1, 0, 1, 1, 1, 0, 1, 0],
-#     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-#     [1, 0, 1, 0, 1, 0, 1, 1, 1, 0],
-#     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-#     [1, 0, 1, 0, 1, 0, 1, 0, 1, 1],
-#     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-# ])
-# ) == [2, 1, 1, 1, 1, 6]
-#       )
-
-print(solution(([
-    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-])
-               )== [1, 1, 1, 1, 1, 5]
-      )
-
-
-#
