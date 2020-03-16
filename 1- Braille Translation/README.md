@@ -1,55 +1,24 @@
-foobar:/ seyedhosein77$ cat <br>
-```start_here.txt    journal.txt```
-<br>foobar:/ seyedhosein77$ cat start_here.txt <br>
-```Type request to request a challenge. Type help for a list of commands.```
-<br>foobar:/ seyedhosein77$ cat journal.txt <br>
-```Success! You've managed to infiltrate Commander Lambda's evil organization, and finally earned yourself an entry-level position as a Minion on her space station. From here, you just might be able to subvert her plans to use the LAMBCHOP doomsday device to destroy Bunny Planet. Problem is, Minions are the lowest of the low in the Lambda hierarchy. Better buck up and get working, or you'll never make it to the top...```
-<br>foobar:~/ seyedhosein77$ 
 
-
---------------------------------------------------------------------
-
-<br>foobar:/ seyedhosein77$ status<br>
-```You've not yet solved a challenge.```
-<br>foobar:/ seyedhosein77$ request<br>
-```
- You are about to begin a time-limited challenge which you will have 48 hours to complete.
-Do you wish to proceed and start your first challenge?
-[Y]es or [N]o: Y
-Requesting challenge...
-Why did you sign up for infiltration duty again? The pamphlets from Bunny HQ promised exotic and interesting missions, yet here you are drudging in the lowest level of Commander Lambda's organization. Hopefully you get that promotion soon...
-New challenge "Braille Translation" added to your home folder.
-Time to solve: 48 hours 
-```
-<br> foobar:~/ seyedhosein77$  <br>
-
-
---------------------------------------------------------------------
-
-<br>foobar:~/braille-translation seyedhosein77$ ls<br>
-```
-Solution.java
-constraints.txt
-readme.txt
-solution.py
-```
-<br>foobar:~/braille-translation seyedhosein77$ cat readme.txt <br>
 ```Braille Translation```
 
 --------------------------------------------------------------------
-```
+
 Because Commander Lambda is an equal-opportunity despot, she has several visually-impaired minions. But she never bothered to follow intergalactic standards for workplace accommodations, so those minions have a hard time navigating her space station. You figure printing out Braille signs will help them, and - since you'll be promoting efficiency at the same time - increase your chances of a promotion. 
 
 Braille is a writing system used to read by touch instead of by sight. Each character is composed of 6 dots in a 2x3 grid, where each dot can either be a bump or be flat (no bump). You plan to translate the signs around the space station to Braille so that the minions under Commander Lambda's command can feel the bumps on the signs and ""read"" the text with their touch. The special printer which can print the bumps onto the signs expects the dots in the following order:
+```
 1 4
 2 5
 3 6
+```
 
 So given the plain text word ""code"", you get the Braille dots:
 
+```
 11 10 11 10
 00 01 01 01
 00 10 00 00
+```
 
 where 1 represents a bump and 0 represents no bump.  Put together, ""code"" becomes the output string ""100100101010100110100010"".
 
@@ -99,14 +68,12 @@ Output:
     000001011110110010100010000000111110101001010100100100101000000000110000111010101010010111101110000000110100101010101101000000010110101001101100111100011100000000101010111001100010111010000000011110110010100010000000111000100000101011101111000000100110101010110110
 
 Use verify [file] to test your solution and see how it does. When you are finished editing your code, use submit [file] to submit your answer. If your solution passes the test cases, it will be removed from your home folder.
-foobar:~/braille-translation seyedhosein77$ 
 
 be removed from your home folder.
 
-```
 
 <br>
-foobar:~/braille-translation seyedhosein77$ cat constraints.txt 
+foobar:~/braille-translation YOUR_NAME$ cat constraints.txt 
 <br>
 
 ```
